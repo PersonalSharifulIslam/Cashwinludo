@@ -1,0 +1,532 @@
+# Real Money Ludo App — Replit AI Master Prompt
+
+এই প্রম্পটটি Replit AI / Claude / AI Agent-কে দিলে একটি সম্পূর্ণ Real-time Multiplayer Ludo Betting App তৈরি করতে পারবে।
+
+---
+
+# Project Name
+
+Royal Ludo Arena
+
+---
+
+# App Goal
+
+একটি real-time online multiplayer ludo app তৈরি করতে হবে যেখানে:
+
+* User registration/login থাকবে
+* Referral system থাকবে
+* Wallet system থাকবে
+* Deposit/Withdraw থাকবে
+* Real-time 1v1 live ludo match থাকবে
+* Matchmaking থাকবে
+* Winner auto reward পাবে
+* Admin panel থাকবে
+* Casino style premium dark UI থাকবে
+
+Gameplay হবে Ludo King এর মতো smooth real-time multiplayer system.
+
+---
+
+# UI Design Style
+
+Design Theme:
+
+* Premium Casino Style
+* Dark UI
+* Gold + Black color combination
+* Smooth animations
+* Modern cards
+* Neon glow buttons
+* Glassmorphism effects
+
+Main Colors:
+
+```css
+Background: #0f0f0f
+Card: #1a1a1a
+Gold: #FFD700
+Accent: #ffb700
+Text: #ffffff
+```
+
+Fonts:
+
+* Poppins
+* Montserrat
+
+---
+
+# Technology Stack
+
+## Frontend
+
+Flutter
+
+## Backend
+
+Node.js + Express.js
+
+## Real-time Multiplayer
+
+Socket.IO
+
+## Database
+
+MongoDB Atlas
+
+## Authentication
+
+JWT Authentication
+
+## Hosting
+
+Frontend:
+
+* Replit Deployments
+
+Backend:
+
+* Railway অথবা Render
+
+---
+
+# Features List
+
+## Authentication System
+
+### Register Page
+
+Fields:
+
+* Full Name
+* Phone Number
+* Password
+* Referral Code (optional)
+
+Features:
+
+* OTP verification
+* JWT token
+* Secure password hashing
+
+---
+
+## Login Page
+
+Fields:
+
+* Phone Number
+* Password
+
+---
+
+# Home Page
+
+Sections:
+
+* Wallet Balance
+* Deposit Button
+* Withdraw Button
+* Match Rooms
+* Referral Section
+* Match History
+* Profile
+
+---
+
+# Match Rooms
+
+Create multiple rooms:
+
+```json
+[
+  {
+    "name": "৳10 Match",
+    "entryFee": 10,
+    "winnerPrize": 18
+  },
+  {
+    "name": "৳50 Match",
+    "entryFee": 50,
+    "winnerPrize": 90
+  },
+  {
+    "name": "৳100 Match",
+    "entryFee": 100,
+    "winnerPrize": 180
+  }
+]
+```
+
+---
+
+# Matchmaking System
+
+Logic:
+
+1. Player room join করবে
+2. Entry fee deduct হবে
+3. Searching screen show হবে
+4. 10 second matchmaking timer চলবে
+5. Another player join করলে match start হবে
+6. না পেলে refund হবে
+
+Searching UI:
+
+```text
+Searching Opponent...
+10
+9
+8
+7
+```
+
+---
+
+# Live Ludo Game
+
+Features:
+
+* Real-time multiplayer
+* Smooth dice animation
+* Turn based gameplay
+* Real-time token sync
+* Auto turn timer
+* Auto reconnect
+* Winner detection
+* Anti cheat validation
+
+---
+
+# Winner System
+
+Example:
+
+```text
+Player A = ৳50
+Player B = ৳50
+Total = ৳100
+Platform Fee = ৳10
+Winner Prize = ৳90
+```
+
+Winner wallet এ instantly টাকা add হবে.
+
+---
+
+# Wallet System
+
+Wallet Types:
+
+* Main Balance
+* Winning Balance
+* Bonus Balance
+
+---
+
+# Deposit System
+
+User:
+
+* টাকা send করবে
+* Transaction ID দিবে
+* Amount দিবে
+* Submit করবে
+
+Admin:
+
+* Deposit request approve/reject করবে
+
+Deposit Schema:
+
+```json
+{
+  "userId": "",
+  "amount": 500,
+  "trxId": "ABCD1234",
+  "status": "pending"
+}
+```
+
+---
+
+# Withdraw System
+
+User:
+
+* Amount দিবে
+* Bkash/Nagad number দিবে
+
+Admin:
+
+* Withdraw approve করবে
+* টাকা manually send করবে
+
+Withdraw Schema:
+
+```json
+{
+  "userId": "",
+  "amount": 200,
+  "number": "017XXXXXXXX",
+  "status": "pending"
+}
+```
+
+---
+
+# Referral System
+
+Features:
+
+* Unique referral code
+* Referral bonus
+* Invite history
+
+Example:
+
+```text
+Invite Friend → Get ৳20 Bonus
+```
+
+---
+
+# Admin Panel
+
+Create secure admin dashboard.
+
+Admin Features:
+
+* User Management
+* Ban/Unban Users
+* Deposit Approve/Reject
+* Withdraw Approve/Reject
+* Room Management
+* Match Monitoring
+* Revenue Dashboard
+* Live Match Tracking
+* Wallet Edit
+* Notifications
+
+---
+
+# Database Collections
+
+```text
+users
+wallets
+rooms
+matches
+deposits
+withdraws
+transactions
+notifications
+referrals
+banned_users
+```
+
+---
+
+# User Schema
+
+```javascript
+const UserSchema = {
+  name: String,
+  phone: String,
+  password: String,
+  referralCode: String,
+  wallet: Number,
+  winningBalance: Number,
+  bonusBalance: Number,
+  wins: Number,
+  losses: Number,
+  banned: Boolean,
+  createdAt: Date
+}
+```
+
+---
+
+# Match Schema
+
+```javascript
+const MatchSchema = {
+  roomId: String,
+  player1: String,
+  player2: String,
+  winner: String,
+  status: String,
+  createdAt: Date
+}
+```
+
+---
+
+# Backend API Routes
+
+## Auth
+
+```text
+POST /api/register
+POST /api/login
+```
+
+## Wallet
+
+```text
+GET /api/wallet
+```
+
+## Deposit
+
+```text
+POST /api/deposit
+GET /api/deposits
+```
+
+## Withdraw
+
+```text
+POST /api/withdraw
+GET /api/withdraws
+```
+
+## Matchmaking
+
+```text
+POST /api/join-room
+```
+
+---
+
+# Socket.IO Events
+
+```javascript
+socket.on("joinRoom")
+socket.on("startMatch")
+socket.on("rollDice")
+socket.on("moveToken")
+socket.on("playerWin")
+socket.on("disconnect")
+```
+
+---
+
+# Security System
+
+Implement:
+
+* JWT Authentication
+* Secure password hashing
+* Anti cheat system
+* Dice validation from server
+* Duplicate login prevention
+* Match validation
+* Auto refund if disconnect
+* Rate limiting
+
+---
+
+# Game Logic
+
+Server-side validate:
+
+* Dice values
+* Player turns
+* Token movement
+* Winner detection
+
+Never trust frontend game logic.
+
+---
+
+# Folder Structure
+
+```text
+/backend
+  /controllers
+  /models
+  /routes
+  /middlewares
+  /socket
+  server.js
+
+/frontend
+  /screens
+  /widgets
+  /providers
+  /services
+  main.dart
+```
+
+---
+
+# Required Screens
+
+```text
+Splash Screen
+Login Screen
+Register Screen
+Home Screen
+Wallet Screen
+Deposit Screen
+Withdraw Screen
+Room Screen
+Searching Screen
+Game Screen
+Result Screen
+Profile Screen
+Referral Screen
+Admin Dashboard
+```
+
+---
+
+# UI Requirements
+
+* Responsive mobile UI
+* Smooth transitions
+* Animated buttons
+* Casino glow effects
+* Real-time updates
+* Modern premium layout
+
+---
+
+# Additional Features
+
+Add:
+
+* Push notifications
+* Sound effects
+* Match history
+* Daily bonus
+* Leaderboard
+* Online player count
+
+---
+
+# Important
+
+* Make production-ready clean code
+* Use scalable architecture
+* Use secure backend validation
+* Optimize for low latency multiplayer
+* Make UI similar to premium casino gaming apps
+* Make gameplay similar to Ludo King
+
+---
+
+# Final Goal
+
+Create a fully functional production-ready real money multiplayer ludo app with:
+
+* Real-time gameplay
+* Wallet system
+* Deposit/Withdraw
+* Matchmaking
+* Casino style UI
+* Admin control panel
+* Secure backend
+* Smooth mobile experience

@@ -1,20 +1,22 @@
-# [Project name]
+# Royal Ludo Arena
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A real-money multiplayer Ludo betting platform for Bengali-speaking players with casino-style premium dark UI.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
+- `pnpm --filter @workspace/royal-ludo run dev` — run the frontend (port 20646)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Required env: `DATABASE_URL` — Postgres connection string, `SESSION_SECRET` — JWT signing key
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
+- Frontend: React + Vite, Tailwind CSS, Framer Motion, Wouter routing
+- API: Express 5 with JWT auth (bcryptjs + jsonwebtoken)
 - DB: PostgreSQL + Drizzle ORM
 - Validation: Zod (`zod/v4`), `drizzle-zod`
 - API codegen: Orval (from OpenAPI spec)
@@ -22,23 +24,42 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `lib/api-spec/openapi.yaml` — Single source of truth for all API contracts
+- `lib/db/src/schema/` — Drizzle DB schema (users, wallets, rooms, matches, deposits, withdrawals, notifications, settings)
+- `artifacts/api-server/src/routes/` — Express route handlers
+- `artifacts/api-server/src/middlewares/auth.ts` — JWT auth middleware
+- `artifacts/royal-ludo/src/` — React frontend (pages, components, auth context)
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- JWT tokens stored in localStorage under key `royal_ludo_token`, injected via custom-fetch
+- Admin access restricted to `jakirulmd1088@gmail.com` at the API level (adminMiddleware)
+- Withdrawal balance deducted immediately upon request submission (before admin approval)
+- Matchmaking uses DB polling — joining creates a match in "searching" state, second player updates to "matched"
+- All prices in Bangladeshi Taka (৳ symbol)
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- **User auth:** Phone + password registration/login with referral code support
+- **Wallet:** Three balance types (main, winning, bonus), deposit via Bkash/Nagad
+- **Game rooms:** 6 rooms from ৳10 to ৳500 entry fee, admin-editable
+- **Matchmaking:** 30-second countdown, auto-refund if no opponent found
+- **Admin panel:** `/admin-login` → full dashboard (users, deposits, withdrawals, rooms, notifications, settings)
+- **Referral system:** Unique codes, ৳20 bonus per referral (admin-configurable)
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Bengali-language app — prices use ৳ (Taka) symbol
+- Admin email: jakirulmd1088@gmail.com, admin password: Admin@2024!Ludo
+- Dark casino theme: deep purple/indigo backgrounds, gold (#FFD700) accents
+- Mobile-first layout (max-width 430px)
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- After schema changes, always run `pnpm --filter @workspace/db run push` then restart api-server workflow
+- After OpenAPI spec changes, run codegen before using updated types
+- The referral bonus on register is hardcoded at ৳20 in auth.ts — configurable in settings for future referrals
+- Admin rooms are soft-deleted (active=false), not hard-deleted
 
 ## Pointers
 

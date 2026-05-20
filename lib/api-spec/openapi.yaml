@@ -1,22 +1,30 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Royal Ludo Arena API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: auth
+  - name: wallet
+  - name: rooms
+  - name: matchmaking
+  - name: deposits
+  - name: withdrawals
+  - name: referrals
+  - name: notifications
+  - name: admin
+  - name: users
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +32,623 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: Registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Validation error
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+
+  /auth/admin-login:
+    post:
+      operationId: adminLogin
+      tags: [auth]
+      summary: Admin login (restricted to specific email)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLoginInput"
+      responses:
+        "200":
+          description: Admin logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "403":
+          description: Not authorized
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+
+  /wallet:
+    get:
+      operationId: getWallet
+      tags: [wallet]
+      summary: Get current user wallet
+      responses:
+        "200":
+          description: Wallet info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Wallet"
+
+  /rooms:
+    get:
+      operationId: getRooms
+      tags: [rooms]
+      summary: List all game rooms
+      responses:
+        "200":
+          description: Rooms list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Room"
+
+  /rooms/{id}:
+    get:
+      operationId: getRoom
+      tags: [rooms]
+      summary: Get a room by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Room details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+
+  /matchmaking/join:
+    post:
+      operationId: joinMatchmaking
+      tags: [matchmaking]
+      summary: Join matchmaking queue for a room
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JoinMatchInput"
+      responses:
+        "200":
+          description: Joined queue or matched
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchStatus"
+
+  /matchmaking/cancel:
+    post:
+      operationId: cancelMatchmaking
+      tags: [matchmaking]
+      summary: Cancel matchmaking and get refund
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CancelMatchInput"
+      responses:
+        "200":
+          description: Cancelled and refunded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchStatus"
+
+  /matchmaking/status/{matchId}:
+    get:
+      operationId: getMatchStatus
+      tags: [matchmaking]
+      summary: Get match status
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Match status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchStatus"
+
+  /matches/history:
+    get:
+      operationId: getMatchHistory
+      tags: [matchmaking]
+      summary: Get match history for current user
+      responses:
+        "200":
+          description: Match history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Match"
+
+  /deposits:
+    post:
+      operationId: createDeposit
+      tags: [deposits]
+      summary: Create deposit request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepositInput"
+      responses:
+        "201":
+          description: Deposit request created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deposit"
+    get:
+      operationId: getDeposits
+      tags: [deposits]
+      summary: Get deposits for current user
+      responses:
+        "200":
+          description: Deposits list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Deposit"
+
+  /withdrawals:
+    post:
+      operationId: createWithdrawal
+      tags: [withdrawals]
+      summary: Create withdrawal request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WithdrawalInput"
+      responses:
+        "201":
+          description: Withdrawal created and balance deducted immediately
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Withdrawal"
+    get:
+      operationId: getWithdrawals
+      tags: [withdrawals]
+      summary: Get withdrawals for current user
+      responses:
+        "200":
+          description: Withdrawals list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Withdrawal"
+
+  /referrals:
+    get:
+      operationId: getReferrals
+      tags: [referrals]
+      summary: Get referral info and history
+      responses:
+        "200":
+          description: Referral info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReferralInfo"
+
+  /notifications:
+    get:
+      operationId: getNotifications
+      tags: [notifications]
+      summary: Get notifications for current user
+      responses:
+        "200":
+          description: Notifications list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+
+  /notifications/{id}/read:
+    patch:
+      operationId: markNotificationRead
+      tags: [notifications]
+      summary: Mark notification as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Marked as read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+
+  /settings/telegram:
+    get:
+      operationId: getTelegramLink
+      tags: [admin]
+      summary: Get telegram link from settings
+      responses:
+        "200":
+          description: Telegram link
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppSettings"
+
+  # Admin routes
+  /admin/stats:
+    get:
+      operationId: getAdminStats
+      tags: [admin]
+      summary: Get admin dashboard statistics
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+
+  /admin/users:
+    get:
+      operationId: getAdminUsers
+      tags: [admin]
+      summary: Get all users (admin)
+      responses:
+        "200":
+          description: Users list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /admin/users/{id}/ban:
+    patch:
+      operationId: banUser
+      tags: [admin]
+      summary: Ban or unban a user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BanInput"
+      responses:
+        "200":
+          description: User ban status updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /admin/users/{id}/balance:
+    patch:
+      operationId: editUserBalance
+      tags: [admin]
+      summary: Edit user balance (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BalanceEditInput"
+      responses:
+        "200":
+          description: Balance updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Wallet"
+
+  /admin/deposits:
+    get:
+      operationId: getAdminDeposits
+      tags: [admin]
+      summary: Get all deposits (admin)
+      responses:
+        "200":
+          description: All deposits
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Deposit"
+
+  /admin/deposits/{id}/approve:
+    patch:
+      operationId: approveDeposit
+      tags: [admin]
+      summary: Approve a deposit
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deposit approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deposit"
+
+  /admin/deposits/{id}/reject:
+    patch:
+      operationId: rejectDeposit
+      tags: [admin]
+      summary: Reject a deposit
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deposit rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deposit"
+
+  /admin/withdrawals:
+    get:
+      operationId: getAdminWithdrawals
+      tags: [admin]
+      summary: Get all withdrawals (admin)
+      responses:
+        "200":
+          description: All withdrawals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Withdrawal"
+
+  /admin/withdrawals/{id}/approve:
+    patch:
+      operationId: approveWithdrawal
+      tags: [admin]
+      summary: Approve a withdrawal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Withdrawal approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Withdrawal"
+
+  /admin/withdrawals/{id}/reject:
+    patch:
+      operationId: rejectWithdrawal
+      tags: [admin]
+      summary: Reject a withdrawal and refund
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Withdrawal rejected and refunded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Withdrawal"
+
+  /admin/rooms:
+    post:
+      operationId: createRoom
+      tags: [admin]
+      summary: Create a game room (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoomInput"
+      responses:
+        "201":
+          description: Room created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+
+  /admin/rooms/{id}:
+    patch:
+      operationId: updateRoom
+      tags: [admin]
+      summary: Update a game room (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoomUpdate"
+      responses:
+        "200":
+          description: Room updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+    delete:
+      operationId: deleteRoom
+      tags: [admin]
+      summary: Delete a game room (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+
+  /admin/notifications:
+    post:
+      operationId: sendNotification
+      tags: [admin]
+      summary: Send notification to all users or specific user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationInput"
+      responses:
+        "201":
+          description: Notification sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+
+  /admin/settings:
+    get:
+      operationId: getAdminSettings
+      tags: [admin]
+      summary: Get app settings
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppSettings"
+    patch:
+      operationId: updateAdminSettings
+      tags: [admin]
+      summary: Update app settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AppSettingsInput"
+      responses:
+        "200":
+          description: Settings updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppSettings"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +656,383 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: ["string", "null"]
+        referralCode:
+          type: string
+        wins:
+          type: integer
+        losses:
+          type: integer
+        banned:
+          type: boolean
+        isAdmin:
+          type: boolean
+        createdAt:
+          type: string
+      required: [id, name, phone, referralCode, wins, losses, banned, isAdmin, createdAt]
+
+    Wallet:
+      type: object
+      properties:
+        userId:
+          type: integer
+        mainBalance:
+          type: number
+        winningBalance:
+          type: number
+        bonusBalance:
+          type: number
+        totalBalance:
+          type: number
+      required: [userId, mainBalance, winningBalance, bonusBalance, totalBalance]
+
+    Room:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        label:
+          type: string
+        entryFee:
+          type: number
+        winnerPrize:
+          type: number
+        playerCount:
+          type: integer
+        tagline:
+          type: string
+        color:
+          type: string
+        active:
+          type: boolean
+      required: [id, name, label, entryFee, winnerPrize, playerCount, tagline, color, active]
+
+    Match:
+      type: object
+      properties:
+        id:
+          type: string
+        roomId:
+          type: integer
+        roomName:
+          type: string
+        player1Name:
+          type: string
+        player2Name:
+          type: ["string", "null"]
+        winnerName:
+          type: ["string", "null"]
+        entryFee:
+          type: number
+        prize:
+          type: number
+        status:
+          type: string
+        createdAt:
+          type: string
+      required: [id, roomId, roomName, player1Name, entryFee, prize, status, createdAt]
+
+    MatchStatus:
+      type: object
+      properties:
+        matchId:
+          type: ["string", "null"]
+        status:
+          type: string
+        opponent:
+          type: ["string", "null"]
+        roomId:
+          type: integer
+        message:
+          type: string
+      required: [status, roomId, message]
+
+    Deposit:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        userName:
+          type: string
+        amount:
+          type: number
+        trxId:
+          type: string
+        method:
+          type: string
+        phone:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+      required: [id, userId, userName, amount, trxId, method, phone, status, createdAt]
+
+    Withdrawal:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        userName:
+          type: string
+        amount:
+          type: number
+        method:
+          type: string
+        phone:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+      required: [id, userId, userName, amount, method, phone, status, createdAt]
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: ["integer", "null"]
+        title:
+          type: string
+        message:
+          type: string
+        isRead:
+          type: boolean
+        createdAt:
+          type: string
+      required: [id, title, message, isRead, createdAt]
+
+    ReferralInfo:
+      type: object
+      properties:
+        referralCode:
+          type: string
+        referralBonus:
+          type: number
+        totalReferred:
+          type: integer
+        totalEarned:
+          type: number
+        referredUsers:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              joinedAt:
+                type: string
+            required: [name, joinedAt]
+      required: [referralCode, referralBonus, totalReferred, totalEarned, referredUsers]
+
+    AppSettings:
+      type: object
+      properties:
+        telegramLink:
+          type: string
+        referralBonus:
+          type: number
+        platformFeePercent:
+          type: number
+        minWithdrawal:
+          type: number
+        minDeposit:
+          type: number
+      required: [telegramLink, referralBonus, platformFeePercent, minWithdrawal, minDeposit]
+
+    AdminStats:
+      type: object
+      properties:
+        totalUsers:
+          type: integer
+        totalMatches:
+          type: integer
+        pendingDeposits:
+          type: integer
+        pendingWithdrawals:
+          type: integer
+        totalRevenue:
+          type: number
+        activeMatches:
+          type: integer
+        totalDeposited:
+          type: number
+        totalWithdrawn:
+          type: number
+      required: [totalUsers, totalMatches, pendingDeposits, pendingWithdrawals, totalRevenue, activeMatches, totalDeposited, totalWithdrawn]
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+      required: [token, user]
+
+    RegisterInput:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        password:
+          type: string
+        referralCode:
+          type: ["string", "null"]
+      required: [name, phone, password]
+
+    LoginInput:
+      type: object
+      properties:
+        phone:
+          type: string
+        password:
+          type: string
+      required: [phone, password]
+
+    AdminLoginInput:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required: [email, password]
+
+    JoinMatchInput:
+      type: object
+      properties:
+        roomId:
+          type: integer
+      required: [roomId]
+
+    CancelMatchInput:
+      type: object
+      properties:
+        matchId:
+          type: string
+      required: [matchId]
+
+    DepositInput:
+      type: object
+      properties:
+        amount:
+          type: number
+        trxId:
+          type: string
+        method:
+          type: string
+        phone:
+          type: string
+      required: [amount, trxId, method, phone]
+
+    WithdrawalInput:
+      type: object
+      properties:
+        amount:
+          type: number
+        method:
+          type: string
+        phone:
+          type: string
+      required: [amount, method, phone]
+
+    RoomInput:
+      type: object
+      properties:
+        name:
+          type: string
+        label:
+          type: string
+        entryFee:
+          type: number
+        winnerPrize:
+          type: number
+        tagline:
+          type: string
+        color:
+          type: string
+      required: [name, label, entryFee, winnerPrize, tagline, color]
+
+    RoomUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        label:
+          type: string
+        entryFee:
+          type: number
+        winnerPrize:
+          type: number
+        tagline:
+          type: string
+        color:
+          type: string
+        active:
+          type: boolean
+
+    BanInput:
+      type: object
+      properties:
+        banned:
+          type: boolean
+      required: [banned]
+
+    BalanceEditInput:
+      type: object
+      properties:
+        mainBalance:
+          type: number
+        winningBalance:
+          type: number
+        bonusBalance:
+          type: number
+      required: [mainBalance, winningBalance, bonusBalance]
+
+    NotificationInput:
+      type: object
+      properties:
+        userId:
+          type: ["integer", "null"]
+        title:
+          type: string
+        message:
+          type: string
+      required: [title, message]
+
+    AppSettingsInput:
+      type: object
+      properties:
+        telegramLink:
+          type: string
+        referralBonus:
+          type: number
+        platformFeePercent:
+          type: number
+        minWithdrawal:
+          type: number
+        minDeposit:
+          type: number
