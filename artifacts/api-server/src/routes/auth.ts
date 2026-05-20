@@ -1,9 +1,19 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import { db } from "@workspace/db";
-import { usersTable, walletsTable } from "@workspace/db";
+import { usersTable, walletsTable, settingsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { authMiddleware, signToken, type AuthRequest } from "../middlewares/auth";
+
+async function getWelcomeBonus(): Promise<number> {
+  const [s] = await db.select().from(settingsTable).where(eq(settingsTable.key, "welcomeBonus")).limit(1);
+  return s ? parseFloat(s.value) : 20;
+}
+
+async function getReferralBonus(): Promise<number> {
+  const [s] = await db.select().from(settingsTable).where(eq(settingsTable.key, "referralBonus")).limit(1);
+  return s ? parseFloat(s.value) : 20;
+}
 
 const ADMIN_EMAIL = "jakirulmd1088@gmail.com";
 const ADMIN_PASSWORD_HASH_KEY = "admin_password_hash";
@@ -55,11 +65,15 @@ router.post("/auth/register", async (req, res) => {
     losses: 0,
   }).returning();
 
+  const welcomeBonus = await getWelcomeBonus();
+  const referralBonus = await getReferralBonus();
+  const bonusAmount = welcomeBonus + (referralCode ? referralBonus : 0);
+
   await db.insert(walletsTable).values({
     userId: user.id,
     mainBalance: 0,
     winningBalance: 0,
-    bonusBalance: referralCode ? 20 : 0,
+    bonusBalance: bonusAmount,
   });
 
   const token = signToken(user.id, false);

@@ -271,6 +271,7 @@ export default function AdminDashboard() {
                     data: { 
                       telegramLink: formData.get('telegramLink') as string,
                       referralBonus: parseInt(formData.get('referralBonus') as string),
+                      welcomeBonus: parseInt(formData.get('welcomeBonus') as string),
                       platformFeePercent: parseInt(formData.get('platformFeePercent') as string),
                       minDeposit: parseInt(formData.get('minDeposit') as string),
                       minWithdrawal: parseInt(formData.get('minWithdrawal') as string),
@@ -283,12 +284,23 @@ export default function AdminDashboard() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
+                      <label className="block text-xs font-medium text-zinc-400 mb-1">Welcome Bonus (৳)</label>
+                      <input name="welcomeBonus" type="number" defaultValue={(settings as any).welcomeBonus ?? 20} className="w-full bg-zinc-950 border border-zinc-800 rounded-md p-2 text-white" />
+                    </div>
+                    <div>
                       <label className="block text-xs font-medium text-zinc-400 mb-1">Referral Bonus (৳)</label>
                       <input name="referralBonus" type="number" defaultValue={settings.referralBonus} className="w-full bg-zinc-950 border border-zinc-800 rounded-md p-2 text-white" />
                     </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-medium text-zinc-400 mb-1">Platform Fee (%)</label>
                       <input name="platformFeePercent" type="number" defaultValue={settings.platformFeePercent} className="w-full bg-zinc-950 border border-zinc-800 rounded-md p-2 text-white" />
+                    </div>
+                    <div className="bg-zinc-800/30 rounded-lg p-3">
+                      <div className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Current Welcome Bonus</div>
+                      <div className="text-xl font-bold text-yellow-400">৳{(settings as any).welcomeBonus ?? 20}</div>
+                      <div className="text-[10px] text-zinc-500 mt-1">Given on every new signup</div>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
