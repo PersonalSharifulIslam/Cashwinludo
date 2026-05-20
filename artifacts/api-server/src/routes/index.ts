@@ -10,6 +10,7 @@ import referralsRouter from "./referrals";
 import notificationsRouter from "./notifications";
 import adminRouter from "./admin";
 import settingsRouter from "./settings";
+import gameRouter from "./game";
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use(referralsRouter);
 router.use(notificationsRouter);
 router.use(adminRouter);
 router.use(settingsRouter);
+router.use(gameRouter);
 
 export default router;

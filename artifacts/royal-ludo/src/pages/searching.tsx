@@ -51,6 +51,7 @@ export default function Searching() {
       const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
       return () => clearInterval(timer);
     }
+    return undefined;
   }, [timeLeft, matchStatus?.status, matchId, cancelMutation, setLocation, toast]);
 
   if (matchStatus?.status === "matched") {

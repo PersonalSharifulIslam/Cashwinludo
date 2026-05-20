@@ -4,3 +4,4 @@ export * from "./matches";
 export * from "./transactions";
 export * from "./notifications";
 export * from "./settings";
+export * from "./game-states";

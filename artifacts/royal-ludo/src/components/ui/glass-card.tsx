@@ -1,14 +1,15 @@
-import { ReactNode } from "react";
+import React, { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 interface GlassCardProps {
   children: ReactNode;
   className?: string;
+  style?: React.CSSProperties;
   variant?: "default" | "gold" | "neon";
   onClick?: () => void;
 }
 
-export function GlassCard({ children, className, variant = "default", onClick }: GlassCardProps) {
+export function GlassCard({ children, className, style, variant = "default", onClick }: GlassCardProps) {
   const baseClasses = "rounded-xl overflow-hidden transition-all duration-300";
   
   const variants = {
@@ -20,6 +21,7 @@ export function GlassCard({ children, className, variant = "default", onClick }:
   return (
     <div 
       className={cn(baseClasses, variants[variant], className)}
+      style={style}
       onClick={onClick}
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}

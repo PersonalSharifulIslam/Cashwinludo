@@ -194,30 +194,4 @@ router.get("/matchmaking/status/:matchId", authMiddleware, async (req: AuthReque
   });
 });
 
-// Match history
-router.get("/matches/history", authMiddleware, async (req: AuthRequest, res) => {
-  const matches = await db.select().from(matchesTable)
-    .where(sql`${matchesTable.player1Id} = ${req.userId} OR ${matchesTable.player2Id} = ${req.userId}`)
-    .orderBy(sql`${matchesTable.createdAt} DESC`)
-    .limit(50);
-
-  const result = await Promise.all(matches.map(async (m) => {
-    const [room] = await db.select().from(roomsTable).where(eq(roomsTable.id, m.roomId)).limit(1);
-    const [p1] = await db.select().from(usersTable).where(eq(usersTable.id, m.player1Id)).limit(1);
-    let p2Name: string | null = null;
-    if (m.player2Id) {
-      const [p2] = await db.select().from(usersTable).where(eq(usersTable.id, m.player2Id)).limit(1);
-      p2Name = p2?.name || null;
-    }
-    let winnerName: string | null = null;
-    if (m.winnerId) {
-      const [w] = await db.select().from(usersTable).where(eq(usersTable.id, m.winnerId)).limit(1);
-      winnerName = w?.name || null;
-    }
-    return formatMatch(m, p1?.name || "Unknown", p2Name, winnerName, room?.name || "Unknown");
-  }));
-
-  res.json(result);
-});
-
 export default router;
