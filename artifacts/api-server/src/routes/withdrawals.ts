@@ -1,8 +1,18 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { withdrawalsTable, usersTable, walletsTable } from "@workspace/db";
+import { withdrawalsTable, usersTable, walletsTable, settingsTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
 import { authMiddleware, adminMiddleware, type AuthRequest } from "../middlewares/auth";
+
+async function getWithdrawalFee(): Promise<number> {
+  const [row] = await db.select().from(settingsTable).where(eq(settingsTable.key, "withdrawalFee")).limit(1);
+  return row ? parseFloat(row.value) : 20;
+}
+
+async function getMinWithdrawal(): Promise<number> {
+  const [row] = await db.select().from(settingsTable).where(eq(settingsTable.key, "minWithdrawal")).limit(1);
+  return row ? parseFloat(row.value) : 100;
+}
 
 const router = Router();
 
@@ -30,15 +40,26 @@ router.post("/withdrawals", authMiddleware, async (req: AuthRequest, res) => {
     return;
   }
 
-  const [wallet] = await db.select().from(walletsTable).where(eq(walletsTable.userId, req.userId!)).limit(1);
-  const totalBal = (wallet?.mainBalance || 0) + (wallet?.winningBalance || 0) + (wallet?.bonusBalance || 0);
-  if (totalBal < parseFloat(amount)) {
-    res.status(400).json({ error: "Insufficient balance" });
+  const requestedAmount = parseFloat(amount);
+  const [minWithdrawal, withdrawalFee] = await Promise.all([getMinWithdrawal(), getWithdrawalFee()]);
+
+  if (requestedAmount < minWithdrawal) {
+    res.status(400).json({ error: `ন্যূনতম উত্তোলন ৳${minWithdrawal}` });
     return;
   }
 
-  // Deduct immediately from wallet
-  let remaining = parseFloat(amount);
+  // Total amount to deduct = requested + fee
+  const totalDeduct = requestedAmount + withdrawalFee;
+
+  const [wallet] = await db.select().from(walletsTable).where(eq(walletsTable.userId, req.userId!)).limit(1);
+  const totalBal = (wallet?.mainBalance || 0) + (wallet?.winningBalance || 0) + (wallet?.bonusBalance || 0);
+  if (totalBal < totalDeduct) {
+    res.status(400).json({ error: `অপর্যাপ্ত ব্যালেন্স (৳${withdrawalFee} চার্জ সহ মোট ৳${totalDeduct} প্রয়োজন)` });
+    return;
+  }
+
+  // Deduct totalDeduct immediately from wallet (winning → main → bonus)
+  let remaining = totalDeduct;
   let newMain = wallet.mainBalance;
   let newWinning = wallet.winningBalance;
   let newBonus = wallet.bonusBalance;
@@ -58,15 +79,16 @@ router.post("/withdrawals", authMiddleware, async (req: AuthRequest, res) => {
     newMain = 0;
   }
   if (remaining > 0) {
-    newBonus -= remaining;
+    newBonus = Math.max(0, newBonus - remaining);
   }
 
-  await db.update(walletsTable).set({ mainBalance: newMain, winningBalance: newWinning, bonusBalance: newBonus })
+  await db.update(walletsTable)
+    .set({ mainBalance: newMain, winningBalance: newWinning, bonusBalance: newBonus })
     .where(eq(walletsTable.userId, req.userId!));
 
   const [w] = await db.insert(withdrawalsTable).values({
     userId: req.userId!,
-    amount: parseFloat(amount),
+    amount: requestedAmount,
     method: method.toLowerCase(),
     phone,
     status: "pending",

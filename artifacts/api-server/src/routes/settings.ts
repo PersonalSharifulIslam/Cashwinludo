@@ -10,7 +10,7 @@ const DEFAULT_SETTINGS = {
   telegramLink: "https://t.me/royalludo",
   referralBonus: "20",
   welcomeBonus: "20",
-  platformFeePercent: "10",
+  withdrawalFee: "20",
   minWithdrawal: "100",
   minDeposit: "50",
 };
@@ -29,32 +29,32 @@ function formatSettings(map: Record<string, string>) {
     telegramLink: map.telegramLink || DEFAULT_SETTINGS.telegramLink,
     referralBonus: parseFloat(map.referralBonus || DEFAULT_SETTINGS.referralBonus),
     welcomeBonus: parseFloat(map.welcomeBonus || DEFAULT_SETTINGS.welcomeBonus),
-    platformFeePercent: parseFloat(map.platformFeePercent || DEFAULT_SETTINGS.platformFeePercent),
+    withdrawalFee: parseFloat(map.withdrawalFee || DEFAULT_SETTINGS.withdrawalFee),
     minWithdrawal: parseFloat(map.minWithdrawal || DEFAULT_SETTINGS.minWithdrawal),
     minDeposit: parseFloat(map.minDeposit || DEFAULT_SETTINGS.minDeposit),
   };
 }
 
-router.get("/settings/telegram", async (req, res) => {
+router.get("/settings/telegram", async (_req, res) => {
   const map = await getSettingsMap();
   res.json(formatSettings(map));
 });
 
-router.get("/admin/settings", authMiddleware, adminMiddleware, async (req, res) => {
+router.get("/admin/settings", authMiddleware, adminMiddleware, async (_req, res) => {
   const map = await getSettingsMap();
   res.json(formatSettings(map));
 });
 
 router.patch("/admin/settings", authMiddleware, adminMiddleware, async (req, res) => {
-  const { telegramLink, referralBonus, welcomeBonus, platformFeePercent, minWithdrawal, minDeposit } = req.body;
+  const { telegramLink, referralBonus, welcomeBonus, withdrawalFee, minWithdrawal, minDeposit } = req.body;
 
   const updates: [string, string][] = [];
-  if (telegramLink !== undefined) updates.push(["telegramLink", telegramLink]);
+  if (telegramLink !== undefined)  updates.push(["telegramLink",  telegramLink]);
   if (referralBonus !== undefined) updates.push(["referralBonus", String(referralBonus)]);
-  if (welcomeBonus !== undefined) updates.push(["welcomeBonus", String(welcomeBonus)]);
-  if (platformFeePercent !== undefined) updates.push(["platformFeePercent", String(platformFeePercent)]);
+  if (welcomeBonus !== undefined)  updates.push(["welcomeBonus",  String(welcomeBonus)]);
+  if (withdrawalFee !== undefined) updates.push(["withdrawalFee", String(withdrawalFee)]);
   if (minWithdrawal !== undefined) updates.push(["minWithdrawal", String(minWithdrawal)]);
-  if (minDeposit !== undefined) updates.push(["minDeposit", String(minDeposit)]);
+  if (minDeposit !== undefined)    updates.push(["minDeposit",    String(minDeposit)]);
 
   for (const [key, value] of updates) {
     const existing = await db.select().from(settingsTable).where(eq(settingsTable.key, key)).limit(1);
